@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import shutil as sh
+import openpyxl
+from openpyxl.styles import PatternFill
 
 class sudoku:
     def __init__(self, maze=np.array(None)):
@@ -60,16 +62,40 @@ class sudoku:
                 puz[i, j] = self.items[(i, j)]
 
         print(puz)
+        return puz
 
+def set_to_val(set_val):
+    set_shape = np.shape(set_val)
+    return np.array([[list(set_val[i, j])[0] for j in range(set_shape[1])] for i in range(set_shape[0])])
 
 inp = pd.read_excel('given.xlsx')
 given = inp.to_numpy()
 a = sudoku(given)
 a.solve_puzzle()
-a.show()
+result = set_to_val(a.show())
 
 org = r'given.xlsx'
 out = r'result.xlsx'
 sh.copy(org, out)
+
+df = pd.DataFrame(result, columns=range(1, 10), index=range(1, 10))
+writer = pd.ExcelWriter(out, engine='xlsxwriter')
+df.to_excel(writer)
+
+workbook = writer.book
+worksheet = writer.sheets['Sheet1']
+
+# Add some cell formats.
+format1 = workbook.add_format({'size': 28, 'align': 'center', 'bold':'True'})
+# cell_format = workbook.add_format()
+# cell_format.set_bg_color('green')
+# worksheet.write('B1', None, cell_format)
+# Set the column width and format.
+worksheet.set_column(1, 10, None, format1)
+
+# Close the Pandas Excel writer and output the Excel file.
+writer.save()
+
+
 
 
